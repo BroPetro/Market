@@ -1,0 +1,132 @@
+<!DOCTYPE html>
+<html lang="uk">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Програма лояльності</title>
+    <style>
+        body { font-family: Arial, sans-serif; text-align: center; margin: 0; padding: 0; background: linear-gradient(to right, #f4f4f4, #e0e0e0); }
+        header { background: linear-gradient(90deg, #28a745, #218838); color: white; padding: 20px; font-size: 24px; font-weight: bold; }
+        nav ul { list-style: none; padding: 0; }
+        nav ul li { display: inline; margin: 0 15px; }
+        nav ul li a { color: white; text-decoration: none; font-weight: bold; font-size: 18px; }
+        section { padding: 20px; background: white; margin: 20px auto; border-radius: 10px; box-shadow: 0 4px 8px rgba(0, 0, 0, 0.2); max-width: 600px; }
+        .btn { display: inline-block; background: #28a745; color: white; padding: 10px 20px; text-decoration: none; border-radius: 5px; font-size: 18px; cursor: pointer; border: none; }
+        .btn:hover { background: #218838; }
+        #balance { font-size: 24px; font-weight: bold; margin: 20px 0; }
+        button { padding: 10px 15px; margin: 10px; cursor: pointer; border-radius: 5px; font-size: 16px; border: none; background: #007bff; color: white; }
+        button:hover { background: #0056b3; }
+        .item-list { text-align: left; }
+    </style>
+</head>
+<body>
+    <header>
+        <h1>Програма лояльності</h1>
+        <nav>
+            <ul>
+                <li><a href="#about">Про програму</a></li>
+                <li><a href="#benefits">Переваги</a></li>
+                <li><a href="#promotions">Акції</a></li>
+            </ul>
+        </nav>
+    </header>
+    
+    <section id="bonus">
+        <h2>Ваш баланс</h2>
+        <p id="balance">0 балів</p>
+        <button onclick="requestBonus()">Начислити бонуси</button>
+        <button onclick="removeItem()">Видалити покупку</button>
+    </section>
+    
+    <section id="shop">
+        <h2>Каталог товарів</h2>
+        <div class="item-list">
+            <h3>За 100 балів</h3>
+            <button onclick="buyItem(100, 'Пиріжок з маком')">Пиріжок з маком</button>
+            <button onclick="buyItem(100, 'Кава')">Кава</button>
+            <h3>За 200 балів</h3>
+            <button onclick="buyItem(200, 'Bob')">Bob</button>
+            <button onclick="buyItem(200, 'Печиво')">Печиво</button>
+            <h3>За 300 балів</h3>
+            <button onclick="buyItem(300, 'Чипси')">Чипси</button>
+        </div>
+    </section>
+    
+    <section id="purchases">
+        <h2>Ваші покупки</h2>
+        <ul id="purchaseList"></ul>
+    </section>
+
+    <section id="promotions">
+        <h2>Акції магазину</h2>
+        <p>🔸 doritos за 100 грн</p>
+        <p>🔸 А цукерки за 30 грн</p>
+        <p>🔸 Кава за 10 грн</p>
+        <p>🔸 Заходь в магазин !</p>
+    </section>
+    
+    <script>
+        let balance = localStorage.getItem('balance') ? parseInt(localStorage.getItem('balance')) : 0;
+        let purchases = JSON.parse(localStorage.getItem('purchases')) || [];
+        document.getElementById('balance').textContent = balance + ' балів';
+        updatePurchaseList();
+
+        function requestBonus() {
+            let password = prompt('Введіть пароль для начислення бонусів:');
+            if (password === '1111') {
+                let amount = parseInt(prompt('Введіть кількість бонусів для начислення:'));
+                if (!isNaN(amount) && amount > 0) {
+                    balance += amount;
+                    localStorage.setItem('balance', balance);
+                    document.getElementById('balance').textContent = balance + ' балів';
+                    alert('Бонуси успішно начислено!');
+                } else {
+                    alert('Некоректне значення!');
+                }
+            } else {
+                alert('Неправильний пароль!');
+            }
+        }
+
+        function buyItem(cost, item) {
+            if (balance >= cost) {
+                balance -= cost;
+                purchases.push(item);
+                localStorage.setItem('balance', balance);
+                localStorage.setItem('purchases', JSON.stringify(purchases));
+                document.getElementById('balance').textContent = balance + ' балів';
+                updatePurchaseList();
+                alert('Ви купили ' + item + '!');
+            } else {
+                alert('Недостатньо балів!');
+            }
+        }
+
+        function updatePurchaseList() {
+            let list = document.getElementById('purchaseList');
+            list.innerHTML = '';
+            purchases.forEach((item, index) => {
+                let li = document.createElement('li');
+                li.textContent = item;
+                list.appendChild(li);
+            });
+        }
+
+        function removeItem() {
+            let password = prompt('Введіть пароль для видалення покупки:');
+            if (password === '1111') {
+                if (purchases.length > 0) {
+                    purchases.pop();
+                    localStorage.setItem('purchases', JSON.stringify(purchases));
+                    updatePurchaseList();
+                    alert('Остання покупка видалена!');
+                } else {
+                    alert('Немає покупок для видалення!');
+                }
+            } else {
+                alert('Неправильний пароль!');
+            }
+        }
+    </script>
+</body>
+</html>
