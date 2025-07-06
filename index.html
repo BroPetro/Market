@@ -1,304 +1,337 @@
 <!DOCTYPE html>
 <html lang="uk">
 <head>
-  <meta charset="UTF-8">
-  <meta name="viewport" content="width=device-width, initial-scale=1.0">
-  <title>Квест: Органи та система органів тварин</title>
-  <script src="https://cdnjs.cloudflare.com/ajax/libs/qrcodejs/1.0.0/qrcode.min.js"></script>
-  <script src="https://webrtc.github.io/adapter/adapter-latest.js"></script>
-  <style>
-    body {
-      font-family: 'Poppins', sans-serif;
-      background: linear-gradient(135deg, #1e3c72, #2a5298);
-      color: #fff;
-      margin: 0;
-      display: flex;
-      justify-content: center;
-      align-items: center;
-      height: 100vh;
-      overflow: hidden;
-    }
-    .container {
-      max-width: 800px;
-      padding: 30px;
-      background: rgba(255, 255, 255, 0.1);
-      border-radius: 20px;
-      box-shadow: 0 10px 30px rgba(0, 0, 0, 0.5);
-      backdrop-filter: blur(10px);
-    }
-    h2 {
-      font-size: 2.5em;
-      margin-bottom: 20px;
-      text-transform: uppercase;
-      letter-spacing: 2px;
-    }
-    button {
-      margin: 10px;
-      padding: 15px 30px;
-      font-size: 1.2em;
-      border: none;
-      border-radius: 25px;
-      cursor: pointer;
-      transition: 0.3s;
-      background: #ff6f61;
-      color: #fff;
-      text-transform: uppercase;
-    }
-    button:hover {
-      background: #e65b50;
-      transform: scale(1.05);
-    }
-    #answers button {
-      display: block;
-      width: 80%;
-      margin: 10px auto;
-      background: #4a90e2;
-      color: #fff;
-      font-size: 1.1em;
-    }
-    #answers button:hover {
-      background: #357abd;
-    }
-    .correct {
-      background: #2ecc71 !important;
-      animation: pop 0.5s ease;
-    }
-    .incorrect {
-      background: #e74c3c !important;
-      animation: shake 0.5s ease;
-    }
-    #qr-code {
-      margin: 20px auto;
-      display: block;
-    }
-    #home-button {
-      background: #3498db;
-    }
-    #home-button:hover {
-      background: #2980b9;
-    }
-    #progress, #leaderboard {
-      margin: 20px 0;
-      font-size: 1.1em;
-    }
-    #leaderboard ul {
-      list-style: none;
-      padding: 0;
-    }
-    #leaderboard ul li {
-      padding: 5px 0;
-      background: rgba(255, 255, 255, 0.2);
-      border-radius: 10px;
-      margin: 5px 0;
-    }
-    @keyframes pop {
-      0% { transform: scale(1); }
-      50% { transform: scale(1.1); }
-      100% { transform: scale(1); }
-    }
-    @keyframes shake {
-      0% { transform: translateX(0); }
-      25% { transform: translateX(-5px); }
-      50% { transform: translateX(5px); }
-      75% { transform: translateX(-5px); }
-      100% { transform: translateX(0); }
-    }
-    @media (max-width: 768px) {
-      .container { padding: 20px; }
-      h2 { font-size: 1.8em; }
-      button { font-size: 1em; padding: 10px 20px; }
-      #answers button { font-size: 1em; }
-    }
-  </style>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Чат BioWorld</title>
+    <script src="https://unpkg.com/peerjs@1.3.1/dist/peerjs.min.js"></script>
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/qrcodejs/1.0.0/qrcode.min.js"></script>
+    <style>
+        body {
+            font-family: 'Roboto', sans-serif;
+            background: linear-gradient(to bottom, #e0f7fa, #80deea);
+            color: #1a3c34;
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            height: 100vh;
+            margin: 0;
+        }
+        .container {
+            display: flex;
+            background: rgba(255, 255, 255, 0.95);
+            padding: 20px;
+            border-radius: 15px;
+            box-shadow: 0 8px 20px rgba(0, 0, 0, 0.2);
+            width: 700px;
+            height: 85vh;
+            border: 2px solid #4caf50;
+        }
+        .sidebar {
+            width: 200px;
+            border-right: 1px solid #4caf50;
+            padding: 10px;
+            overflow-y: auto;
+        }
+        .chat-area {
+            flex-grow: 1;
+            display: flex;
+            flex-direction: column;
+            padding: 10px;
+        }
+        h1 {
+            color: #2e7d32;
+            text-align: center;
+            font-size: 1.8em;
+            margin: 10px 0;
+        }
+        .status {
+            color: #d81b60;
+            font-size: 0.9em;
+            text-align: center;
+            margin-bottom: 10px;
+        }
+        input, button {
+            padding: 12px;
+            font-size: 16px;
+            margin: 5px 0;
+            width: calc(100% - 24px);
+            border-radius: 8px;
+            border: 1px solid #4caf50;
+            transition: all 0.3s ease;
+        }
+        button {
+            background: #4caf50;
+            color: white;
+            cursor: pointer;
+        }
+        button:hover {
+            background: #388e3c;
+            transform: translateY(-2px);
+        }
+        .post {
+            background: #e8f5e9;
+            padding: 12px;
+            margin: 8px 0;
+            border-radius: 10px;
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            word-break: break-word;
+            animation: newMessage 0.5s ease;
+        }
+        .like-btn {
+            cursor: pointer;
+            color: #d81b60;
+            font-size: 18px;
+            margin-left: 10px;
+        }
+        .like-btn.liked {
+            color: #ff1744;
+            transform: scale(1.2);
+        }
+        .chat-box {
+            flex-grow: 1;
+            overflow-y: auto;
+            padding: 10px;
+            background: #f1f8e9;
+            border-radius: 10px;
+            margin-bottom: 10px;
+        }
+        .message {
+            max-width: 70%;
+            padding: 10px;
+            margin: 5px;
+            border-radius: 10px;
+            word-wrap: break-word;
+        }
+        .my-message {
+            background: #81c784;
+            align-self: flex-end;
+        }
+        .other-message {
+            background: #b0bec5;
+            align-self: flex-start;
+        }
+        .image-preview {
+            max-width: 100px;
+            cursor: pointer;
+            transition: transform 0.2s;
+            border-radius: 5px;
+        }
+        .image-preview:hover {
+            transform: scale(1.2);
+        }
+        .image-preview:active {
+            width: 100%;
+            height: auto;
+        }
+        .contact {
+            padding: 10px;
+            background: #e8f5e9;
+            margin: 5px 0;
+            border-radius: 8px;
+            cursor: pointer;
+        }
+        .contact:hover {
+            background: #c8e6c9;
+        }
+        #qrCode {
+            margin: 10px auto;
+            text-align: center;
+        }
+        @keyframes newMessage {
+            0% { transform: scale(0.8); opacity: 0; }
+            100% { transform: scale(1); opacity: 1; }
+        }
+    </style>
 </head>
 <body>
-  <div class="container" id="main-container">
-    <div id="mode-selection">
-      <h2>Обери режим гри</h2>
-      <button onclick="startSinglePlayer()">Одиночна гра</button>
-      <button onclick="startMultiPlayer()">Багатокористувацька гра</button>
+    <div class="container">
+        <div class="sidebar">
+            <h2>Контакти</h2>
+            <div id="contactsList"></div>
+            <button onclick="addContact()">Додати контакт</button>
+        </div>
+        <div class="chat-area">
+            <h1>💬 Чат BioWorld</h1>
+            <p>Твій ID: <span id="myId">...</span> <button onclick="copyId()">📋 Копіювати ID</button></p>
+            <div id="qrCode"></div>
+            <p class="status" id="connectionStatus">Очікування підключення...</p>
+            <input type="text" id="peerId" placeholder="ID друга...">
+            <button onclick="connectToPeer()">Підключитись</button>
+            <input type="text" id="messageInput" placeholder="Введи повідомлення...">
+            <input type="file" id="imageInput" accept="image/*">
+            <button onclick="sendMessage()">Надіслати</button>
+            <button onclick="clearChat()">Очистити чат</button>
+            <div class="chat-box" id="chatBox"></div>
+            <audio id="notificationSound" src="https://www.myinstants.com/media/sounds/sms-alert-1.mp3"></audio>
+        </div>
     </div>
-  </div>
+    
+    <script>
+        let peer;
+        let conn;
+        let likes = {};
+        let contacts = JSON.parse(localStorage.getItem('contacts')) || [];
+        let myId = localStorage.getItem('peerId');
 
-  <script>
-    const quiz = [
-      {question: "Остаточний хазяїн це?", answers: ["Це наука що вивчає гельмінтів", "Організм, в якому паразит проходить частину свого життя", "Організм, в якому паразитує доросла особа"], correct: 2},
-      {question: "Котячий сисун: хто проміжний хазяїн?", answers: ["Риба", "Тварини", "Молюск, коропові"], correct: 2},
-      {question: "Хто остаточний хазяїн бичачого ціп'яка?", answers: ["Людина", "Тварини", "Всі перечислені"], correct: 0},
-      {question: "Ехінокок: хто проміжний хазяїн?", answers: ["Людина", "Риба", "ВРХ"], correct: 2},
-      {question: "Кільчасті черви дихають за допомогою?", answers: ["Поверхню тіла", "Легені", "Зябра"], correct: 0},
-      {question: "Яке розмноження в кільчастих червів?", answers: ["Статеве", "Не статеве", "Роздільно статеве"], correct: 2},
-      {question: "ВРХ це --", answers: ["Яблуко", "Велика рогата худоба", "Груша"], correct: 1},
-      {question: "Хто є остаточним хазяїном стьожака широкого?", answers: ["Людина, рибоїдні савці", "Риба", "Молюски"], correct: 0},
-      {question: "Гельмінтологія це --", answers: ["Наука що вивчає ґрунти", "Наука що вивчає рослини", "Наука, що вивчає гельмінтів"], correct: 2},
-      {question: "Кільчасті черви пересуваються за допомогою", answers: ["Ніг", "Щетинок", "Рук"], correct: 1},
-    ];
-
-    let currentQuestion = 0;
-    let score = 0;
-    let players = {}; // Зберігання результатів гравців для P2P
-    let peerConnection;
-    let dataChannel;
-
-    // Ініціалізація WebRTC
-    function initializePeerConnection() {
-      const configuration = { iceServers: [{ urls: 'stun:stun.l.google.com:19302' }] };
-      peerConnection = new RTCPeerConnection(configuration);
-
-      dataChannel = peerConnection.createDataChannel("chat");
-      dataChannel.onmessage = (event) => {
-        const data = JSON.parse(event.data);
-        if (data.type === "scoreUpdate") {
-          players[data.player] = data.score;
-          updateLeaderboard();
+        if (!myId) {
+            peer = new Peer();
+        } else {
+            peer = new Peer(myId);
         }
-      };
 
-      peerConnection.onicecandidate = (event) => {
-        if (event.candidate) {
-          // Надсилання кандидата іншому гравцеві (потрібен сервер або ручне введення)
-          console.log("ICE candidate:", event.candidate);
+        peer.on('open', id => {
+            myId = id;
+            localStorage.setItem('peerId', id);
+            document.getElementById("myId").innerText = id;
+            document.getElementById("connectionStatus").innerText = "Готово до підключення!";
+            document.getElementById("connectionStatus").style.color = "#4caf50";
+            generateQRCode(id);
+            loadContacts();
+        });
+
+        peer.on('connection', connection => {
+            conn = connection;
+            document.getElementById("connectionStatus").innerText = `Підключено до ${conn.peer}!`;
+            document.getElementById("connectionStatus").style.color = "#4caf50";
+            conn.on('data', data => {
+                displayMessage(data.text, false, data.image, data.messageId);
+                document.getElementById("notificationSound").play();
+            });
+        });
+
+        function connectToPeer() {
+            const peerId = document.getElementById("peerId").value;
+            conn = peer.connect(peerId);
+            conn.on('open', () => {
+                console.log("Connected to: " + peerId);
+                document.getElementById("connectionStatus").innerText = `Підключено до ${peerId}!`;
+                document.getElementById("connectionStatus").style.color = "#4caf50";
+                addContact(peerId);
+            });
+            conn.on('data', data => {
+                displayMessage(data.text, false, data.image, data.messageId);
+                document.getElementById("notificationSound").play();
+            });
         }
-      };
 
-      peerConnection.ondatachannel = (event) => {
-        dataChannel = event.channel;
-        dataChannel.onmessage = (event) => {
-          const data = JSON.parse(event.data);
-          if (data.type === "scoreUpdate") {
-            players[data.player] = data.score;
-            updateLeaderboard();
-          }
-        };
-      };
-    }
+        function sendMessage() {
+            const input = document.getElementById("messageInput");
+            const imageInput = document.getElementById("imageInput");
+            let imageData = null;
+            const messageId = Date.now() + Math.random();
 
-    function startSinglePlayer() {
-      document.getElementById("main-container").innerHTML = `
-        <h2 id="question"></h2>
-        <div id="answers"></div>
-        <p id="progress">Питання: 1 / ${quiz.length}</p>
-        <p id="score">Очки: 0</p>
-        <button onclick="restartQuiz()">Перезапустити</button>
-        <button id="home-button" onclick="goHome()">🏠 Головне меню</button>
-      `;
-      loadQuestion();
-    }
+            if (imageInput.files.length > 0) {
+                const reader = new FileReader();
+                reader.onload = function(event) {
+                    imageData = event.target.result;
+                    sendData(input.value, imageData, messageId);
+                };
+                reader.readAsDataURL(imageInput.files[0]);
+            } else {
+                sendData(input.value, null, messageId);
+            }
+        }
 
-    function startMultiPlayer() {
-      initializePeerConnection();
-      const quizUrl = window.location.href;
-      document.getElementById("main-container").innerHTML = `
-        <h2>Багатокористувацька гра</h2>
-        <p>Скануйте QR-код для підключення:</p>
-        <div id="qr-code"></div>
-        <p>Введіть ID іншого гравця: <input type="text" id="peerId" placeholder="ID гравця"></p>
-        <button onclick="connectToPeer()">Підключитися</button>
-        <button id="home-button" onclick="goHome()">🏠 Головне меню</button>
-      `;
-      new QRCode(document.getElementById("qr-code"), {
-        text: quizUrl,
-        width: 200,
-        height: 200,
-        colorDark: "#fff",
-        colorLight: "transparent",
-        correctLevel: QRCode.CorrectLevel.H
-      });
-    }
+        function sendData(text, image, messageId) {
+            if (!conn || text.trim() === "") return;
+            const message = { text: text, image: image, messageId: messageId };
+            conn.send(message);
+            displayMessage(text, true, image, messageId);
+            document.getElementById("messageInput").value = "";
+            document.getElementById("imageInput").value = "";
+        }
 
-    async function connectToPeer() {
-      const peerId = document.getElementById("peerId").value;
-      const offer = await peerConnection.createOffer();
-      await peerConnection.setLocalDescription(offer);
-      // Тут потрібно надіслати offer іншому гравцеві (через сервер або вручну)
-      console.log("Offer:", offer.sdp);
-      dataChannel = peerConnection.createDataChannel("chat");
-      dataChannel.onopen = () => startQuiz();
-    }
+        function displayMessage(text, isMine, image, messageId) {
+            const chatBox = document.getElementById("chatBox");
+            const messageDiv = document.createElement("div");
+            messageDiv.classList.add("message", isMine ? "my-message" : "other-message");
+            messageDiv.dataset.messageId = messageId;
 
-    function startQuiz() {
-      currentQuestion = 0;
-      score = 0;
-      players[generatePlayerId()] = 0; // Унікальний ID для поточного гравця
-      document.getElementById("main-container").innerHTML = `
-        <h2 id="question"></h2>
-        <div id="answers"></div>
-        <p id="progress">Питання: 1 / ${quiz.length}</p>
-        <p id="score">Очки: 0</p>
-        <div id="leaderboard"><h3>Лідери:</h3><ul></ul></div>
-        <button onclick="restartQuiz()">Перезапустити</button>
-        <button id="home-button" onclick="goHome()">🏠 Головне меню</button>
-      `;
-      loadQuestion();
-      updateLeaderboard();
-    }
+            if (text) {
+                if (text.includes("https://www.youtube.com/watch?v=dQw4w9WgXcQ")) {
+                    text = "Це рікрол! 🎵";
+                }
+                text = text.replace(/(https?:\/\/\S+)/g, '<a href="$1" target="_blank">$1</a>');
+                messageDiv.innerHTML = text;
+            }
 
-    function goHome() {
-      location.reload();
-    }
+            if (image) {
+                const img = document.createElement("img");
+                img.src = image;
+                img.classList.add("image-preview");
+                messageDiv.appendChild(img);
+            }
 
-    function loadQuestion() {
-      document.getElementById("question").innerText = quiz[currentQuestion].question;
-      let answersDiv = document.getElementById("answers");
-      answersDiv.innerHTML = "";
-      quiz[currentQuestion].answers.forEach((answer, index) => {
-        let btn = document.createElement("button");
-        btn.innerText = answer;
-        btn.onclick = function() { checkAnswer(index, btn); };
-        answersDiv.appendChild(btn);
-      });
-      document.getElementById("progress").innerText = `Питання: ${currentQuestion + 1} / ${quiz.length}`;
-    }
+            const likeBtn = document.createElement("span");
+            likeBtn.classList.add("like-btn");
+            likeBtn.innerHTML = "❤️";
+            likeBtn.onclick = () => toggleLike(messageId, likeBtn);
+            messageDiv.appendChild(likeBtn);
 
-    function checkAnswer(index, btn) {
-      if (index === quiz[currentQuestion].correct) {
-        score++;
-        btn.classList.add('correct');
-      } else {
-        btn.classList.add('incorrect');
-      }
-      document.getElementById("score").innerText = "Очки: " + score;
-      if (dataChannel && dataChannel.readyState === "open") {
-        dataChannel.send(JSON.stringify({ type: "scoreUpdate", player: generatePlayerId(), score }));
-      }
-      setTimeout(nextQuestion, 1000);
-    }
+            chatBox.appendChild(messageDiv);
+            chatBox.scrollTop = chatBox.scrollHeight;
+        }
 
-    function nextQuestion() {
-      currentQuestion++;
-      if (currentQuestion < quiz.length) {
-        loadQuestion();
-      } else {
-        document.getElementById("main-container").innerHTML = `
-          <h2>Кінець квесту!</h2>
-          <p>Ваш рахунок: ${score} з ${quiz.length}</p>
-          <div id="leaderboard"><h3>Лідери:</h3><ul></ul></div>
-          <button onclick="restartQuiz()">Перезапустити</button>
-          <button id="home-button" onclick="goHome()">🏠 Головне меню</button>
-        `;
-        updateLeaderboard();
-      }
-    }
+        function toggleLike(messageId, likeBtn) {
+            if (likes[messageId]) {
+                likes[messageId]--;
+                likeBtn.classList.remove("liked");
+            } else {
+                likes[messageId] = (likes[messageId] || 0) + 1;
+                likeBtn.classList.add("liked");
+            }
+        }
 
-    function restartQuiz() {
-      currentQuestion = 0;
-      score = 0;
-      startQuiz();
-    }
+        function clearChat() {
+            const chatBox = document.getElementById("chatBox");
+            chatBox.innerHTML = "";
+            likes = {};
+        }
 
-    function generatePlayerId() {
-      return 'player_' + Math.random().toString(36).substr(2, 9);
-    }
+        function copyId() {
+            navigator.clipboard.writeText(myId);
+            alert("ID скопійовано!");
+        }
 
-    function updateLeaderboard() {
-      const leaderboard = document.getElementById("leaderboard").querySelector("ul");
-      leaderboard.innerHTML = "";
-      Object.entries(players).sort(([, a], [, b]) => b - a).forEach(([player, score]) => {
-        const li = document.createElement("li");
-        li.textContent = `${player}: ${score} очок`;
-        leaderboard.appendChild(li);
-      });
-    }
-  </script>
+        function generateQRCode(id) {
+            const qrCodeDiv = document.getElementById("qrCode");
+            qrCodeDiv.innerHTML = "";
+            new QRCode(qrCodeDiv, {
+                text: `https://bioworld.chat/connect?id=${id}`,
+                width: 100,
+                height: 100,
+                colorDark: "#2e7d32",
+                colorLight: "#ffffff",
+                correctLevel: QRCode.CorrectLevel.H
+            });
+        }
+
+        function addContact(peerId = null) {
+            if (!peerId) peerId = document.getElementById("peerId").value;
+            if (peerId && !contacts.includes(peerId)) {
+                contacts.push(peerId);
+                localStorage.setItem('contacts', JSON.stringify(contacts));
+                loadContacts();
+            }
+        }
+
+        function loadContacts() {
+            const contactsList = document.getElementById("contactsList");
+            contactsList.innerHTML = "";
+            contacts.forEach(peerId => {
+                const contactDiv = document.createElement("div");
+                contactDiv.classList.add("contact");
+                contactDiv.innerText = peerId;
+                contactDiv.onclick = () => {
+                    document.getElementById("peerId").value = peerId;
+                    connectToPeer();
+                };
+                contactsList.appendChild(contactDiv);
+            });
+        }
+    </script>
 </body>
 </html>
