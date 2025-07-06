@@ -79,16 +79,7 @@
             align-items: center;
             word-break: break-word;
             animation: newMessage 0.5s ease;
-        }
-        .like-btn {
-            cursor: pointer;
-            color: #d81b60;
-            font-size: 18px;
-            margin-left: 10px;
-        }
-        .like-btn.liked {
-            color: #ff1744;
-            transform: scale(1.2);
+            position: relative;
         }
         .chat-box {
             flex-grow: 1;
@@ -104,6 +95,7 @@
             margin: 5px;
             border-radius: 10px;
             word-wrap: break-word;
+            position: relative;
         }
         .my-message {
             background: #81c784;
@@ -112,6 +104,19 @@
         .other-message {
             background: #b0bec5;
             align-self: flex-start;
+        }
+        .message-time {
+            font-size: 0.8em;
+            color: #555;
+            margin-top: 5px;
+        }
+        .delete-btn {
+            cursor: pointer;
+            color: #d81b60;
+            font-size: 14px;
+            position: absolute;
+            top: 5px;
+            right: 5px;
         }
         .image-preview {
             max-width: 100px;
@@ -164,6 +169,7 @@
             <input type="file" id="imageInput" accept="image/*">
             <button onclick="sendMessage()">Надіслати</button>
             <button onclick="clearChat()">Очистити чат</button>
+            <button onclick="exportChat()">Експортувати чат</button>
             <div class="chat-box" id="chatBox"></div>
             <audio id="notificationSound" src="https://www.myinstants.com/media/sounds/sms-alert-1.mp3"></audio>
         </div>
@@ -172,7 +178,7 @@
     <script>
         let peer;
         let conn;
-        let likes = {};
+        let chatHistory = JSON.parse(localStorage.getItem('chatHistory')) || [];
         let contacts = JSON.parse(localStorage.getItem('contacts')) || [];
         let myId = localStorage.getItem('peerId');
 
@@ -190,6 +196,7 @@
             document.getElementById("connectionStatus").style.color = "#4caf50";
             generateQRCode(id);
             loadContacts();
+            loadChatHistory();
         });
 
         peer.on('connection', connection => {
@@ -198,6 +205,7 @@
             document.getElementById("connectionStatus").style.color = "#4caf50";
             conn.on('data', data => {
                 displayMessage(data.text, false, data.image, data.messageId);
+                saveMessage(data.text, false, data.image, data.messageId);
                 document.getElementById("notificationSound").play();
             });
         });
@@ -213,6 +221,7 @@
             });
             conn.on('data', data => {
                 displayMessage(data.text, false, data.image, data.messageId);
+                saveMessage(data.text, false, data.image, data.messageId);
                 document.getElementById("notificationSound").play();
             });
         }
@@ -240,6 +249,7 @@
             const message = { text: text, image: image, messageId: messageId };
             conn.send(message);
             displayMessage(text, true, image, messageId);
+            saveMessage(text, true, image, messageId);
             document.getElementById("messageInput").value = "";
             document.getElementById("imageInput").value = "";
         }
@@ -265,30 +275,56 @@
                 messageDiv.appendChild(img);
             }
 
-            const likeBtn = document.createElement("span");
-            likeBtn.classList.add("like-btn");
-            likeBtn.innerHTML = "❤️";
-            likeBtn.onclick = () => toggleLike(messageId, likeBtn);
-            messageDiv.appendChild(likeBtn);
+            const timeDiv = document.createElement("div");
+            timeDiv.classList.add("message-time");
+            timeDiv.innerText = new Date().toLocaleTimeString('uk-UA');
+            messageDiv.appendChild(timeDiv);
+
+            const deleteBtn = document.createElement("span");
+            deleteBtn.classList.add("delete-btn");
+            deleteBtn.innerHTML = "🗑️";
+            deleteBtn.onclick = () => deleteMessage(messageId, messageDiv);
+            messageDiv.appendChild(deleteBtn);
 
             chatBox.appendChild(messageDiv);
             chatBox.scrollTop = chatBox.scrollHeight;
         }
 
-        function toggleLike(messageId, likeBtn) {
-            if (likes[messageId]) {
-                likes[messageId]--;
-                likeBtn.classList.remove("liked");
-            } else {
-                likes[messageId] = (likes[messageId] || 0) + 1;
-                likeBtn.classList.add("liked");
-            }
+        function saveMessage(text, isMine, image, messageId) {
+            chatHistory.push({ text, isMine, image, messageId, timestamp: new Date().toLocaleString('uk-UA') });
+            localStorage.setItem('chatHistory', JSON.stringify(chatHistory));
+        }
+
+        function loadChatHistory() {
+            chatHistory.forEach(msg => {
+                displayMessage(msg.text, msg.isMine, msg.image, msg.messageId);
+            });
+        }
+
+        function deleteMessage(messageId, messageDiv) {
+            chatHistory = chatHistory.filter(msg => msg.messageId !== messageId);
+            localStorage.setItem('chatHistory', JSON.stringify(chatHistory));
+            messageDiv.remove();
         }
 
         function clearChat() {
             const chatBox = document.getElementById("chatBox");
             chatBox.innerHTML = "";
-            likes = {};
+            chatHistory = [];
+            localStorage.setItem('chatHistory', JSON.stringify(chatHistory));
+        }
+
+        function exportChat() {
+            const chatText = chatHistory.map(msg => 
+                `[${msg.timestamp}] ${msg.isMine ? 'Я' : 'Друг'}: ${msg.text || 'Зображення'}`
+            ).join('\n');
+            const blob = new Blob([chatText], { type: 'text/plain' });
+            const url = URL.createObjectURL(blob);
+            const a = document.createElement('a');
+            a.href = url;
+            a.download = 'BioWorld_Chat_History.txt';
+            a.click();
+            URL.revokeObjectURL(url);
         }
 
         function copyId() {
