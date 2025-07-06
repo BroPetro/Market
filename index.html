@@ -1,132 +1,304 @@
 <!DOCTYPE html>
 <html lang="uk">
 <head>
-    <meta charset="UTF-8">
-    <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Програма лояльності</title>
-    <style>
-        body { font-family: Arial, sans-serif; text-align: center; margin: 0; padding: 0; background: linear-gradient(to right, #f4f4f4, #e0e0e0); }
-        header { background: linear-gradient(90deg, #28a745, #218838); color: white; padding: 20px; font-size: 24px; font-weight: bold; }
-        nav ul { list-style: none; padding: 0; }
-        nav ul li { display: inline; margin: 0 15px; }
-        nav ul li a { color: white; text-decoration: none; font-weight: bold; font-size: 18px; }
-        section { padding: 20px; background: white; margin: 20px auto; border-radius: 10px; box-shadow: 0 4px 8px rgba(0, 0, 0, 0.2); max-width: 600px; }
-        .btn { display: inline-block; background: #28a745; color: white; padding: 10px 20px; text-decoration: none; border-radius: 5px; font-size: 18px; cursor: pointer; border: none; }
-        .btn:hover { background: #218838; }
-        #balance { font-size: 24px; font-weight: bold; margin: 20px 0; }
-        button { padding: 10px 15px; margin: 10px; cursor: pointer; border-radius: 5px; font-size: 16px; border: none; background: #007bff; color: white; }
-        button:hover { background: #0056b3; }
-        .item-list { text-align: left; }
-    </style>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Квест: Органи та система органів тварин</title>
+  <script src="https://cdnjs.cloudflare.com/ajax/libs/qrcodejs/1.0.0/qrcode.min.js"></script>
+  <script src="https://webrtc.github.io/adapter/adapter-latest.js"></script>
+  <style>
+    body {
+      font-family: 'Poppins', sans-serif;
+      background: linear-gradient(135deg, #1e3c72, #2a5298);
+      color: #fff;
+      margin: 0;
+      display: flex;
+      justify-content: center;
+      align-items: center;
+      height: 100vh;
+      overflow: hidden;
+    }
+    .container {
+      max-width: 800px;
+      padding: 30px;
+      background: rgba(255, 255, 255, 0.1);
+      border-radius: 20px;
+      box-shadow: 0 10px 30px rgba(0, 0, 0, 0.5);
+      backdrop-filter: blur(10px);
+    }
+    h2 {
+      font-size: 2.5em;
+      margin-bottom: 20px;
+      text-transform: uppercase;
+      letter-spacing: 2px;
+    }
+    button {
+      margin: 10px;
+      padding: 15px 30px;
+      font-size: 1.2em;
+      border: none;
+      border-radius: 25px;
+      cursor: pointer;
+      transition: 0.3s;
+      background: #ff6f61;
+      color: #fff;
+      text-transform: uppercase;
+    }
+    button:hover {
+      background: #e65b50;
+      transform: scale(1.05);
+    }
+    #answers button {
+      display: block;
+      width: 80%;
+      margin: 10px auto;
+      background: #4a90e2;
+      color: #fff;
+      font-size: 1.1em;
+    }
+    #answers button:hover {
+      background: #357abd;
+    }
+    .correct {
+      background: #2ecc71 !important;
+      animation: pop 0.5s ease;
+    }
+    .incorrect {
+      background: #e74c3c !important;
+      animation: shake 0.5s ease;
+    }
+    #qr-code {
+      margin: 20px auto;
+      display: block;
+    }
+    #home-button {
+      background: #3498db;
+    }
+    #home-button:hover {
+      background: #2980b9;
+    }
+    #progress, #leaderboard {
+      margin: 20px 0;
+      font-size: 1.1em;
+    }
+    #leaderboard ul {
+      list-style: none;
+      padding: 0;
+    }
+    #leaderboard ul li {
+      padding: 5px 0;
+      background: rgba(255, 255, 255, 0.2);
+      border-radius: 10px;
+      margin: 5px 0;
+    }
+    @keyframes pop {
+      0% { transform: scale(1); }
+      50% { transform: scale(1.1); }
+      100% { transform: scale(1); }
+    }
+    @keyframes shake {
+      0% { transform: translateX(0); }
+      25% { transform: translateX(-5px); }
+      50% { transform: translateX(5px); }
+      75% { transform: translateX(-5px); }
+      100% { transform: translateX(0); }
+    }
+    @media (max-width: 768px) {
+      .container { padding: 20px; }
+      h2 { font-size: 1.8em; }
+      button { font-size: 1em; padding: 10px 20px; }
+      #answers button { font-size: 1em; }
+    }
+  </style>
 </head>
 <body>
-    <header>
-        <h1>Програма лояльності</h1>
-        <nav>
-            <ul>
-                <li><a href="#about">Про програму</a></li>
-                <li><a href="#benefits">Переваги</a></li>
-                <li><a href="#promotions">Акції</a></li>
-            </ul>
-        </nav>
-    </header>
-    
-    <section id="bonus">
-        <h2>Ваш баланс</h2>
-        <p id="balance">0 балів</p>
-        <button onclick="requestBonus()">Начислити бонуси</button>
-        <button onclick="removeItem()">Видалити покупку</button>
-    </section>
-    
-    <section id="shop">
-        <h2>Каталог товарів</h2>
-        <div class="item-list">
-            <h3>За 100 балів</h3>
-            <button onclick="buyItem(100, 'Пиріжок з маком')">Пиріжок з маком</button>
-            <button onclick="buyItem(100, 'Кава')">Кава</button>
-            <h3>За 200 балів</h3>
-            <button onclick="buyItem(200, 'Bob')">Bob</button>
-            <button onclick="buyItem(200, 'Печиво')">Печиво</button>
-            <h3>За 300 балів</h3>
-            <button onclick="buyItem(300, 'Чипси')">Чипси</button>
-        </div>
-    </section>
-    
-    <section id="purchases">
-        <h2>Ваші покупки</h2>
-        <ul id="purchaseList"></ul>
-    </section>
+  <div class="container" id="main-container">
+    <div id="mode-selection">
+      <h2>Обери режим гри</h2>
+      <button onclick="startSinglePlayer()">Одиночна гра</button>
+      <button onclick="startMultiPlayer()">Багатокористувацька гра</button>
+    </div>
+  </div>
 
-    <section id="promotions">
-        <h2>Акції магазину</h2>
-        <p>🔸 doritos за 100 грн</p>
-        <p>🔸 А цукерки за 30 грн</p>
-        <p>🔸 Кава за 10 грн</p>
-        <p>🔸 Заходь в магазин !</p>
-    </section>
-    
-    <script>
-        let balance = localStorage.getItem('balance') ? parseInt(localStorage.getItem('balance')) : 0;
-        let purchases = JSON.parse(localStorage.getItem('purchases')) || [];
-        document.getElementById('balance').textContent = balance + ' балів';
-        updatePurchaseList();
+  <script>
+    const quiz = [
+      {question: "Остаточний хазяїн це?", answers: ["Це наука що вивчає гельмінтів", "Організм, в якому паразит проходить частину свого життя", "Організм, в якому паразитує доросла особа"], correct: 2},
+      {question: "Котячий сисун: хто проміжний хазяїн?", answers: ["Риба", "Тварини", "Молюск, коропові"], correct: 2},
+      {question: "Хто остаточний хазяїн бичачого ціп'яка?", answers: ["Людина", "Тварини", "Всі перечислені"], correct: 0},
+      {question: "Ехінокок: хто проміжний хазяїн?", answers: ["Людина", "Риба", "ВРХ"], correct: 2},
+      {question: "Кільчасті черви дихають за допомогою?", answers: ["Поверхню тіла", "Легені", "Зябра"], correct: 0},
+      {question: "Яке розмноження в кільчастих червів?", answers: ["Статеве", "Не статеве", "Роздільно статеве"], correct: 2},
+      {question: "ВРХ це --", answers: ["Яблуко", "Велика рогата худоба", "Груша"], correct: 1},
+      {question: "Хто є остаточним хазяїном стьожака широкого?", answers: ["Людина, рибоїдні савці", "Риба", "Молюски"], correct: 0},
+      {question: "Гельмінтологія це --", answers: ["Наука що вивчає ґрунти", "Наука що вивчає рослини", "Наука, що вивчає гельмінтів"], correct: 2},
+      {question: "Кільчасті черви пересуваються за допомогою", answers: ["Ніг", "Щетинок", "Рук"], correct: 1},
+    ];
 
-        function requestBonus() {
-            let password = prompt('Введіть пароль для начислення бонусів:');
-            if (password === '1111') {
-                let amount = parseInt(prompt('Введіть кількість бонусів для начислення:'));
-                if (!isNaN(amount) && amount > 0) {
-                    balance += amount;
-                    localStorage.setItem('balance', balance);
-                    document.getElementById('balance').textContent = balance + ' балів';
-                    alert('Бонуси успішно начислено!');
-                } else {
-                    alert('Некоректне значення!');
-                }
-            } else {
-                alert('Неправильний пароль!');
-            }
+    let currentQuestion = 0;
+    let score = 0;
+    let players = {}; // Зберігання результатів гравців для P2P
+    let peerConnection;
+    let dataChannel;
+
+    // Ініціалізація WebRTC
+    function initializePeerConnection() {
+      const configuration = { iceServers: [{ urls: 'stun:stun.l.google.com:19302' }] };
+      peerConnection = new RTCPeerConnection(configuration);
+
+      dataChannel = peerConnection.createDataChannel("chat");
+      dataChannel.onmessage = (event) => {
+        const data = JSON.parse(event.data);
+        if (data.type === "scoreUpdate") {
+          players[data.player] = data.score;
+          updateLeaderboard();
         }
+      };
 
-        function buyItem(cost, item) {
-            if (balance >= cost) {
-                balance -= cost;
-                purchases.push(item);
-                localStorage.setItem('balance', balance);
-                localStorage.setItem('purchases', JSON.stringify(purchases));
-                document.getElementById('balance').textContent = balance + ' балів';
-                updatePurchaseList();
-                alert('Ви купили ' + item + '!');
-            } else {
-                alert('Недостатньо балів!');
-            }
+      peerConnection.onicecandidate = (event) => {
+        if (event.candidate) {
+          // Надсилання кандидата іншому гравцеві (потрібен сервер або ручне введення)
+          console.log("ICE candidate:", event.candidate);
         }
+      };
 
-        function updatePurchaseList() {
-            let list = document.getElementById('purchaseList');
-            list.innerHTML = '';
-            purchases.forEach((item, index) => {
-                let li = document.createElement('li');
-                li.textContent = item;
-                list.appendChild(li);
-            });
-        }
+      peerConnection.ondatachannel = (event) => {
+        dataChannel = event.channel;
+        dataChannel.onmessage = (event) => {
+          const data = JSON.parse(event.data);
+          if (data.type === "scoreUpdate") {
+            players[data.player] = data.score;
+            updateLeaderboard();
+          }
+        };
+      };
+    }
 
-        function removeItem() {
-            let password = prompt('Введіть пароль для видалення покупки:');
-            if (password === '1111') {
-                if (purchases.length > 0) {
-                    purchases.pop();
-                    localStorage.setItem('purchases', JSON.stringify(purchases));
-                    updatePurchaseList();
-                    alert('Остання покупка видалена!');
-                } else {
-                    alert('Немає покупок для видалення!');
-                }
-            } else {
-                alert('Неправильний пароль!');
-            }
-        }
-    </script>
+    function startSinglePlayer() {
+      document.getElementById("main-container").innerHTML = `
+        <h2 id="question"></h2>
+        <div id="answers"></div>
+        <p id="progress">Питання: 1 / ${quiz.length}</p>
+        <p id="score">Очки: 0</p>
+        <button onclick="restartQuiz()">Перезапустити</button>
+        <button id="home-button" onclick="goHome()">🏠 Головне меню</button>
+      `;
+      loadQuestion();
+    }
+
+    function startMultiPlayer() {
+      initializePeerConnection();
+      const quizUrl = window.location.href;
+      document.getElementById("main-container").innerHTML = `
+        <h2>Багатокористувацька гра</h2>
+        <p>Скануйте QR-код для підключення:</p>
+        <div id="qr-code"></div>
+        <p>Введіть ID іншого гравця: <input type="text" id="peerId" placeholder="ID гравця"></p>
+        <button onclick="connectToPeer()">Підключитися</button>
+        <button id="home-button" onclick="goHome()">🏠 Головне меню</button>
+      `;
+      new QRCode(document.getElementById("qr-code"), {
+        text: quizUrl,
+        width: 200,
+        height: 200,
+        colorDark: "#fff",
+        colorLight: "transparent",
+        correctLevel: QRCode.CorrectLevel.H
+      });
+    }
+
+    async function connectToPeer() {
+      const peerId = document.getElementById("peerId").value;
+      const offer = await peerConnection.createOffer();
+      await peerConnection.setLocalDescription(offer);
+      // Тут потрібно надіслати offer іншому гравцеві (через сервер або вручну)
+      console.log("Offer:", offer.sdp);
+      dataChannel = peerConnection.createDataChannel("chat");
+      dataChannel.onopen = () => startQuiz();
+    }
+
+    function startQuiz() {
+      currentQuestion = 0;
+      score = 0;
+      players[generatePlayerId()] = 0; // Унікальний ID для поточного гравця
+      document.getElementById("main-container").innerHTML = `
+        <h2 id="question"></h2>
+        <div id="answers"></div>
+        <p id="progress">Питання: 1 / ${quiz.length}</p>
+        <p id="score">Очки: 0</p>
+        <div id="leaderboard"><h3>Лідери:</h3><ul></ul></div>
+        <button onclick="restartQuiz()">Перезапустити</button>
+        <button id="home-button" onclick="goHome()">🏠 Головне меню</button>
+      `;
+      loadQuestion();
+      updateLeaderboard();
+    }
+
+    function goHome() {
+      location.reload();
+    }
+
+    function loadQuestion() {
+      document.getElementById("question").innerText = quiz[currentQuestion].question;
+      let answersDiv = document.getElementById("answers");
+      answersDiv.innerHTML = "";
+      quiz[currentQuestion].answers.forEach((answer, index) => {
+        let btn = document.createElement("button");
+        btn.innerText = answer;
+        btn.onclick = function() { checkAnswer(index, btn); };
+        answersDiv.appendChild(btn);
+      });
+      document.getElementById("progress").innerText = `Питання: ${currentQuestion + 1} / ${quiz.length}`;
+    }
+
+    function checkAnswer(index, btn) {
+      if (index === quiz[currentQuestion].correct) {
+        score++;
+        btn.classList.add('correct');
+      } else {
+        btn.classList.add('incorrect');
+      }
+      document.getElementById("score").innerText = "Очки: " + score;
+      if (dataChannel && dataChannel.readyState === "open") {
+        dataChannel.send(JSON.stringify({ type: "scoreUpdate", player: generatePlayerId(), score }));
+      }
+      setTimeout(nextQuestion, 1000);
+    }
+
+    function nextQuestion() {
+      currentQuestion++;
+      if (currentQuestion < quiz.length) {
+        loadQuestion();
+      } else {
+        document.getElementById("main-container").innerHTML = `
+          <h2>Кінець квесту!</h2>
+          <p>Ваш рахунок: ${score} з ${quiz.length}</p>
+          <div id="leaderboard"><h3>Лідери:</h3><ul></ul></div>
+          <button onclick="restartQuiz()">Перезапустити</button>
+          <button id="home-button" onclick="goHome()">🏠 Головне меню</button>
+        `;
+        updateLeaderboard();
+      }
+    }
+
+    function restartQuiz() {
+      currentQuestion = 0;
+      score = 0;
+      startQuiz();
+    }
+
+    function generatePlayerId() {
+      return 'player_' + Math.random().toString(36).substr(2, 9);
+    }
+
+    function updateLeaderboard() {
+      const leaderboard = document.getElementById("leaderboard").querySelector("ul");
+      leaderboard.innerHTML = "";
+      Object.entries(players).sort(([, a], [, b]) => b - a).forEach(([player, score]) => {
+        const li = document.createElement("li");
+        li.textContent = `${player}: ${score} очок`;
+        leaderboard.appendChild(li);
+      });
+    }
+  </script>
 </body>
 </html>
